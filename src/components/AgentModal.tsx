@@ -40,13 +40,20 @@ export default function AgentModal({
 
       {/* Modal */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="modal-content"
-        onClick={e => e.stopPropagation()}
+        onClick={onClose}
       >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="modal-card"
+          onClick={e => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
@@ -195,6 +202,7 @@ export default function AgentModal({
           </button>
           <span className="kbd">ESC</span>
         </div>
+        </motion.div>
       </motion.div>
     </>
   );

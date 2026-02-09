@@ -33,14 +33,20 @@ export default function TaskModal({ task, agents, onClose }: TaskModalProps) {
 
       {/* Modal */}
       <motion.div
-        layoutId={`task-${task.id}`}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="modal-content"
-        onClick={e => e.stopPropagation()}
+        onClick={onClose}
       >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="modal-card"
+          onClick={e => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -211,6 +217,7 @@ export default function TaskModal({ task, agents, onClose }: TaskModalProps) {
           </button>
           <span className="kbd">ESC</span>
         </div>
+        </motion.div>
       </motion.div>
     </>
   );

@@ -144,10 +144,17 @@
 
 .modal-content {
   position: fixed;
-  left: 50%;
-  top: 50%;
+  inset: 0;
   z-index: 50;
-  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  pointer-events: none;
+}
+
+.modal-content > .modal-card {
+  pointer-events: auto;
   width: 100%;
   max-width: 32rem;
   max-height: 85vh;
@@ -156,7 +163,7 @@
   padding: 1.5rem;
   background: linear-gradient(180deg, hsl(240 5% 12%) 0%, hsl(240 5% 10%) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
+  box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04),
     0 24px 64px rgba(0, 0, 0, 0.5),
     0 0 80px rgba(0, 0, 0, 0.3);
