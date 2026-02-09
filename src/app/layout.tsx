@@ -2,43 +2,67 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { loadSettings, ACCENT_PRESETS } from "@/lib/settings";
 
-const inter = Inter({ 
-  subsets: ["latin"], 
+const inter = Inter({
+  subsets: ["latin"],
   variable: "--font-inter",
   display: 'swap',
 });
 
-const dashboardName = process.env.NEXT_PUBLIC_DASHBOARD_NAME || 'OpenClaw';
+const settings = loadSettings();
+const accent = ACCENT_PRESETS[settings.accentColor] || ACCENT_PRESETS.green;
 
 export const metadata: Metadata = {
-  title: `${dashboardName} — Mission Control`,
-  description: `${dashboardName} Agent Swarm Dashboard`,
+  title: `${settings.name} — ${settings.subtitle}`,
+  description: `${settings.name} Agent Swarm Dashboard`,
 };
 
 export const viewport: Viewport = {
-  themeColor: '#111113',
+  themeColor: settings.theme === 'light' ? '#fafafa' : '#111113',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const themeClass = settings.theme === 'light' ? 'theme-light' : 'theme-dark';
+  const isDark = settings.theme !== 'light';
+
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+    <html lang="en" className={themeClass}>
+      <body
+        className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
+        style={{
+          '--accent-primary': accent.primary,
+          '--accent-primary-light': accent.primaryLight,
+          '--accent-glow': accent.glow,
+        } as React.CSSProperties}
+      >
         {/* Subtle background gradient */}
         <div className="fixed inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-DEFAULT/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-DEFAULT/5 rounded-full blur-3xl" />
+          <div
+            className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl"
+            style={{ background: settings.backgroundGradient.topLeft }}
+          />
+          <div
+            className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl"
+            style={{ background: settings.backgroundGradient.bottomRight }}
+          />
         </div>
         {children}
-        <Toaster 
-          theme="dark" 
+        <Toaster
+          theme={isDark ? "dark" : "light"}
           position="bottom-right"
           toastOptions={{
-            style: {
-              background: 'rgba(22, 22, 24, 0.95)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              backdropFilter: 'blur(12px)',
-            },
+            style: isDark
+              ? {
+                  background: 'rgba(22, 22, 24, 0.95)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  backdropFilter: 'blur(12px)',
+                }
+              : {
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid rgba(0, 0, 0, 0.08)',
+                  backdropFilter: 'blur(12px)',
+                },
           }}
         />
       </body>

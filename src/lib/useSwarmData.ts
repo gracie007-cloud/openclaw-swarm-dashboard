@@ -10,6 +10,22 @@ interface DashboardConfig {
   version: string;
 }
 
+export interface ClientSettings {
+  name: string;
+  subtitle: string;
+  repoUrl: string | null;
+  logoIcon: string;
+  theme: 'dark' | 'light';
+  accentColor: string;
+  accent: { primary: string; primaryLight: string; glow: string };
+  backgroundGradient: { topLeft: string; bottomRight: string };
+  cardDensity: 'compact' | 'comfortable';
+  showMetricsPanel: boolean;
+  showTokenPanel: boolean;
+  refreshInterval: number;
+  timeDisplay: 'utc' | 'local';
+}
+
 interface SwarmData {
   agents: Agent[];
   tasks: Task[];
@@ -25,6 +41,7 @@ interface SwarmData {
   };
   tokenStats: TokenStats | null;
   config: DashboardConfig | null;
+  settings: ClientSettings | null;
   timestamp: number;
 }
 
@@ -35,6 +52,7 @@ interface UseSwarmDataReturn {
   stats: SwarmData['stats'] | null;
   tokenStats: TokenStats | null;
   config: DashboardConfig | null;
+  settings: ClientSettings | null;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -100,6 +118,7 @@ export function useSwarmData(): UseSwarmDataReturn {
     stats: data?.stats || null,
     tokenStats: data?.tokenStats || null,
     config: data?.config || null,
+    settings: data?.settings || null,
     loading,
     error,
     refresh: fetchData,

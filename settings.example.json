@@ -1,0 +1,18 @@
+{
+  "name": "OpenClaw",
+  "subtitle": "Mission Control",
+  "repoUrl": null,
+  "logoIcon": "zap",
+  "theme": "dark",
+  "accentColor": "green",
+  "backgroundGradient": {
+    "topLeft": "rgba(70,167,88,0.05)",
+    "bottomRight": "rgba(62,99,221,0.05)"
+  },
+  "cardDensity": "comfortable",
+  "showMetricsPanel": true,
+  "showTokenPanel": true,
+  "refreshInterval": 30000,
+  "timeDisplay": "utc",
+  "agents": null
+}

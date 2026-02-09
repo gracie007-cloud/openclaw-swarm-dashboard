@@ -38,6 +38,9 @@ A real-time web dashboard that gives you eyes on your [OpenClaw](https://opencla
 | **Kanban Board** | Drag-and-drop tasks across lanes: In Progress, Review, Assigned, Waiting, Inbox, Done |
 | **Live Feed** | Real-time activity stream from task changes, auto-refreshes every 30s |
 | **Metrics Panel** | Charts and stats — task throughput, status distribution, completion rates |
+| **Token Tracking** | Input/output token usage per task, model breakdown charts, daily trends |
+| **Personalization** | Custom name, theme (dark/light), 8 accent colors, logo icon — persists across updates |
+| **Self-Update** | One-click update button pulls latest code and auto-restarts the server |
 | **Command Palette** | `Cmd+K` to quickly filter agents, toggle feed, refresh data |
 | **Task & Agent Modals** | Click any task or agent for full detail views |
 
@@ -47,15 +50,17 @@ A real-time web dashboard that gives you eyes on your [OpenClaw](https://opencla
 
 1. [What Is This?](#what-is-this)
 2. [Quick Start](#quick-start)
-3. [Configuration](#configuration)
-4. [Security](#security)
-5. [Task File Format](#task-file-format)
-6. [Agent Roster](#agent-roster)
-7. [Architecture](#architecture)
-8. [Tech Stack](#tech-stack)
-9. [Keyboard Shortcuts](#keyboard-shortcuts)
-10. [Audit Reports](#audit-reports)
-11. [Contributing](#contributing)
+3. [Agent-Assisted Install](#recommended-agent-assisted-install)
+4. [Personalization](#personalization)
+5. [Configuration](#configuration)
+6. [Security](#security)
+7. [Task File Format](#task-file-format)
+8. [Agent Roster](#agent-roster)
+9. [Architecture](#architecture)
+10. [Tech Stack](#tech-stack)
+11. [Keyboard Shortcuts](#keyboard-shortcuts)
+12. [Audit Reports](#audit-reports)
+13. [Contributing](#contributing)
 
 ---
 
@@ -90,6 +95,49 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Recommended: Agent-Assisted Install
+
+For the best setup experience, let your AI agent handle the installation. Point any AI agent (Claude, GPT, Gemini, or others) at this repo and it will:
+
+1. Clone and install dependencies
+2. Ask you personalization questions (name, theme, accent color, logo)
+3. Write a `settings.json` that persists across future updates
+4. Configure environment variables
+5. Start the server
+
+The agent reads [`AGENTS.md`](AGENTS.md) — a comprehensive setup guide written for AI agents of any capability level. Your preferences are stored in `settings.json` (gitignored), so `git pull` never overwrites them.
+
+```
+"Clone github.com/bokiko/openClaw-dashboard and set it up. Read AGENTS.md for instructions."
+```
+
+---
+
+## Personalization
+
+The dashboard is fully customizable via `settings.json` in the project root:
+
+```bash
+cp settings.example.json settings.json
+# Edit settings.json with your preferences
+```
+
+| Setting | Options | Default |
+|---------|---------|---------|
+| `name` | Any string | `"OpenClaw"` |
+| `subtitle` | Any string | `"Mission Control"` |
+| `theme` | `dark`, `light` | `dark` |
+| `accentColor` | `green`, `blue`, `purple`, `orange`, `red`, `cyan`, `amber`, `pink` | `green` |
+| `logoIcon` | `zap`, `brain`, `bot`, `flame`, `shield`, `rocket`, `sparkles`, `cpu`, `eye`, `activity` | `zap` |
+| `cardDensity` | `compact`, `comfortable` | `comfortable` |
+| `showMetricsPanel` | `true`, `false` | `true` |
+| `showTokenPanel` | `true`, `false` | `true` |
+| `timeDisplay` | `utc`, `local` | `utc` |
+
+Settings are gitignored and survive updates. See [`settings.example.json`](settings.example.json) for the full schema.
 
 ---
 
@@ -181,7 +229,7 @@ The dashboard checks these fields in order: `claimed_by` → `assignee` → firs
 
 ## Agent Roster
 
-The default agent roster matches the OpenClaw swarm squad. Edit `src/lib/data.ts` to match your agents:
+The default agent roster matches the OpenClaw swarm squad. Customize via `settings.json` (set the `agents` array) or edit `src/lib/data.ts`:
 
 | Agent | Role | Badge |
 |-------|------|-------|
@@ -199,42 +247,50 @@ The default agent roster matches the OpenClaw swarm squad. Edit `src/lib/data.ts
 ```
 openClaw-dashboard/
 ├── audits/                        # Security audit reports
-│   └── 2026-02-08-security-audit.md
+├── scripts/
+│   ├── sync-db.ts                 # PostgreSQL → task JSON bridge
+│   ├── log-usage.ts               # Token usage writer (DB + file)
+│   ├── dispatch-task.sh           # Agent wrapper with auto-capture
+│   ├── ensure-tables.ts           # Database migration runner
+│   └── migrations/                # SQL migration files
 ├── public/
 │   └── screenshot.png             # Dashboard screenshot
 ├── src/
 │   ├── app/
 │   │   ├── api/data/route.ts      # API endpoint — reads task files from disk
+│   │   ├── api/update/route.ts    # Self-update endpoint (git pull + restart)
 │   │   ├── page.tsx                # Main dashboard page
-│   │   ├── layout.tsx              # Root layout, dark theme
-│   │   └── globals.css             # Tailwind config, CSS variables
+│   │   ├── layout.tsx              # Root layout, theme-aware
+│   │   └── globals.css             # Tailwind config, CSS variables (dark + light)
 │   ├── components/
 │   │   ├── AgentAvatar.tsx         # Agent avatar with status indicator
 │   │   ├── AgentModal.tsx          # Agent detail modal
 │   │   ├── AgentStrip.tsx          # Horizontal agent status bar
 │   │   ├── CommandPalette.tsx      # Cmd+K command palette
-│   │   ├── Header.tsx              # Top bar with stats
+│   │   ├── Header.tsx              # Top bar with stats, logo, update button
 │   │   ├── LiveFeed.tsx            # Activity feed drawer
 │   │   ├── MetricsPanel.tsx        # Charts and statistics
+│   │   ├── TokenMetricsPanel.tsx   # Token usage charts and trends
 │   │   ├── MissionQueue.tsx        # Kanban board with drag-and-drop
-│   │   ├── TaskCard.tsx            # Individual task card
-│   │   └── TaskModal.tsx           # Task detail modal
+│   │   ├── TaskCard.tsx            # Individual task card (with token badge)
+│   │   └── TaskModal.tsx           # Task detail modal (with usage info)
 │   ├── lib/
-│   │   ├── data.ts                 # Task loader — reads JSON from disk
+│   │   ├── data.ts                 # Task loader, stats, token aggregation
+│   │   ├── settings.ts             # Settings loader (reads settings.json)
 │   │   ├── useSwarmData.ts         # Client hook — fetches from API, auto-refreshes
 │   │   └── utils.ts                # Utility functions
 │   └── types/
 │       └── index.ts                # TypeScript interfaces and config
+├── AGENTS.md                       # AI agent setup guide (model-agnostic)
+├── settings.example.json           # Settings schema reference
 ├── .env.example                    # Environment variable reference
-├── eslint.config.mjs
 ├── next.config.ts
 ├── package.json
-├── postcss.config.js
 ├── tailwind.config.js
 └── tsconfig.json
 ```
 
-**Data flow:** Task JSON files on disk → `data.ts` reads them → `/api/data` serves them → `useSwarmData` hook fetches every 30s → React components render.
+**Data flow:** Task JSON files on disk → `data.ts` reads them → `/api/data` serves them → `useSwarmData` hook fetches every 30s → React components render. Settings from `settings.json` are applied server-side and sent to the client via the API.
 
 ---
 

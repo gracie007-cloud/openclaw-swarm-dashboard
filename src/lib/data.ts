@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
 import { join, resolve } from 'path';
 import type { Agent, Task, FeedItem, TaskStatus, Priority, TokenUsage, TokenStats } from '@/types';
+import { loadSettings, ACCENT_PRESETS, type DashboardSettings, type AccentColor } from '@/lib/settings';
 
 const TASKS_DIR = process.env.OPENCLAW_TASKS_DIR || './tasks';
 
@@ -13,23 +14,50 @@ export interface DashboardConfig {
 }
 
 export function getDashboardConfig(): DashboardConfig {
-  // Defaults
-  let name = process.env.NEXT_PUBLIC_DASHBOARD_NAME || 'OpenClaw';
-  let subtitle = 'Mission Control';
-  let repoUrl = process.env.NEXT_PUBLIC_REPO_URL || null;
+  const settings = loadSettings();
+  return {
+    name: settings.name,
+    subtitle: settings.subtitle,
+    repoUrl: settings.repoUrl,
+    version: '0.2.0',
+  };
+}
 
-  // Override from dashboard-config.json (bridge can write this)
-  const configPath = join(TASKS_DIR, 'dashboard-config.json');
-  if (existsSync(configPath)) {
-    try {
-      const raw = JSON.parse(readFileSync(configPath, 'utf-8')) as Record<string, unknown>;
-      if (raw.name && typeof raw.name === 'string') name = raw.name;
-      if (raw.subtitle && typeof raw.subtitle === 'string') subtitle = raw.subtitle;
-      if (raw.repoUrl && typeof raw.repoUrl === 'string') repoUrl = raw.repoUrl;
-    } catch { /* ignore malformed config */ }
-  }
+// ── Client Settings ──────────────────────────────────────────────────
+export interface ClientSettings {
+  name: string;
+  subtitle: string;
+  repoUrl: string | null;
+  logoIcon: string;
+  theme: 'dark' | 'light';
+  accentColor: AccentColor;
+  accent: { primary: string; primaryLight: string; glow: string };
+  backgroundGradient: { topLeft: string; bottomRight: string };
+  cardDensity: 'compact' | 'comfortable';
+  showMetricsPanel: boolean;
+  showTokenPanel: boolean;
+  refreshInterval: number;
+  timeDisplay: 'utc' | 'local';
+}
 
-  return { name, subtitle, repoUrl, version: '0.2.0' };
+export function getClientSettings(): ClientSettings {
+  const s = loadSettings();
+  const accent = ACCENT_PRESETS[s.accentColor] || ACCENT_PRESETS.green;
+  return {
+    name: s.name,
+    subtitle: s.subtitle,
+    repoUrl: s.repoUrl,
+    logoIcon: s.logoIcon,
+    theme: s.theme,
+    accentColor: s.accentColor,
+    accent,
+    backgroundGradient: s.backgroundGradient,
+    cardDensity: s.cardDensity,
+    showMetricsPanel: s.showMetricsPanel,
+    showTokenPanel: s.showTokenPanel,
+    refreshInterval: s.refreshInterval,
+    timeDisplay: s.timeDisplay,
+  };
 }
 
 // ── Color Validation ──────────────────────────────────────────────────

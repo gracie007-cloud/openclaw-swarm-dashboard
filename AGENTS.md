@@ -1,6 +1,10 @@
 # OpenClaw Mission Control — Agent Setup Guide
 
-You are setting up the OpenClaw Mission Control dashboard. Follow these instructions exactly. Do not skip steps. Do not improvise alternatives. Every step has been tested.
+You are setting up the OpenClaw Mission Control dashboard for the user. Follow these instructions exactly. Do not skip steps. Do not improvise alternatives. Every step has been tested.
+
+This guide works with any AI agent — Claude, GPT, Gemini, LLaMA, or any other model.
+
+---
 
 ## What This Is
 
@@ -13,6 +17,8 @@ Before starting, confirm these exist on the machine:
 - **npm** (`npm --version`)
 - **git** (`git --version`)
 - **PostgreSQL** (optional — only needed for the DB bridge. Docker works: `docker ps | grep postgres`)
+
+If any prerequisite is missing, install it before continuing.
 
 ---
 
@@ -34,7 +40,7 @@ cp .env.example .env.local
 
 ### Step 3: Configure .env.local
 
-Edit `.env.local` with the correct values. Here is what each variable does:
+Edit `.env.local` with the correct values:
 
 ```bash
 # REQUIRED: Path to the directory containing task JSON files.
@@ -47,15 +53,8 @@ OPENCLAW_TASKS_DIR=./tasks
 OPENCLAW_API_KEY=
 NEXT_PUBLIC_OPENCLAW_API_KEY=
 
-# OPTIONAL: Custom name shown in the header (defaults to "OpenClaw")
-NEXT_PUBLIC_DASHBOARD_NAME=
-
-# OPTIONAL: GitHub/GitLab repo URL — shows a link icon in the header
-NEXT_PUBLIC_REPO_URL=
-
 # OPTIONAL: PostgreSQL connection for the bridge script.
 # Only needed if you want to sync sessions/handoffs/token usage from a DB.
-# Format: postgresql://user:password@host:port/database
 DATABASE_URL=
 ```
 
@@ -65,7 +64,11 @@ DATABASE_URL=
 mkdir -p tasks
 ```
 
-### Step 5: Start the dashboard
+### Step 5: Personalize the dashboard
+
+**IMPORTANT: Before starting the server, run the personalization step below.** This creates a `settings.json` that persists across updates. See the [Personalization](#personalization) section.
+
+### Step 6: Start the dashboard
 
 For development:
 ```bash
@@ -79,6 +82,177 @@ npm start
 ```
 
 The dashboard runs on `http://localhost:3000` by default.
+
+---
+
+## Personalization
+
+The dashboard is fully personalizable via a `settings.json` file in the project root. This file is gitignored, so it survives `git pull` updates — the user's preferences are never overwritten.
+
+### How it works
+
+1. Copy the example: `cp settings.example.json settings.json`
+2. Edit `settings.json` with the user's preferences
+3. The dashboard reads `settings.json` on every request (cached for 5 seconds)
+4. Changes take effect on the next page load — no restart needed
+
+### Interactive setup (ask the user)
+
+**You MUST ask the user these questions before writing `settings.json`.** Present each question clearly, show the available options, and use their answers to build the file. If the user says "just use defaults" or skips a question, use the default value.
+
+#### Question 1: Dashboard name
+> "What would you like to name your Mission Control dashboard?"
+>
+> Default: `"OpenClaw"`
+> Examples: `"Alpha Squad"`, `"Project Phoenix"`, `"Neural Ops"`
+
+Maps to: `name` field
+
+#### Question 2: Subtitle
+> "What subtitle should appear below the name?"
+>
+> Default: `"Mission Control"`
+> Examples: `"Command Center"`, `"Agent HQ"`, `"Control Room"`
+
+Maps to: `subtitle` field
+
+#### Question 3: Theme
+> "Which theme do you prefer?"
+>
+> Options:
+> - `dark` (default) — Dark background, light text. Best for low-light environments.
+> - `light` — Light background, dark text. Best for bright environments.
+
+Maps to: `theme` field
+
+#### Question 4: Accent color
+> "Pick an accent color for the dashboard:"
+>
+> Options:
+> - `green` (default) — Fresh and balanced
+> - `blue` — Professional and calm
+> - `purple` — Bold and creative
+> - `orange` — Energetic and warm
+> - `red` — Intense and urgent
+> - `cyan` — Cool and technical
+> - `amber` — Warm and golden
+> - `pink` — Vibrant and modern
+
+Maps to: `accentColor` field
+
+#### Question 5: Logo icon
+> "Which icon should appear in the header?"
+>
+> Options:
+> - `zap` (default) — Lightning bolt
+> - `brain` — Brain
+> - `bot` — Robot
+> - `flame` — Fire
+> - `shield` — Shield
+> - `rocket` — Rocket
+> - `sparkles` — Sparkles
+> - `cpu` — Processor chip
+> - `eye` — Eye
+> - `activity` — Heartbeat pulse
+
+Maps to: `logoIcon` field
+
+#### Question 6: Repository URL (optional)
+> "Would you like to link to a GitHub/GitLab repository? If so, paste the URL. Otherwise say 'skip'."
+>
+> Default: `null` (no link shown)
+
+Maps to: `repoUrl` field (set to `null` if skipped)
+
+#### Question 7: Card density
+> "How dense should task cards be?"
+>
+> Options:
+> - `comfortable` (default) — More spacing, easier to read
+> - `compact` — Tighter layout, fits more tasks on screen
+
+Maps to: `cardDensity` field
+
+#### Question 8: Panels
+> "Which metric panels should be visible?"
+>
+> Options (multi-select):
+> - Metrics Panel — task throughput, status distribution charts (default: on)
+> - Token Usage Panel — token consumption charts and model breakdown (default: on)
+
+Maps to: `showMetricsPanel` and `showTokenPanel` fields
+
+#### Question 9: Time display
+> "How should timestamps be displayed?"
+>
+> Options:
+> - `utc` (default) — All times in UTC
+> - `local` — Times in the user's local timezone
+
+Maps to: `timeDisplay` field
+
+### Writing settings.json
+
+After collecting answers, write `settings.json` to the project root. Here is the full schema with all defaults:
+
+```json
+{
+  "name": "OpenClaw",
+  "subtitle": "Mission Control",
+  "repoUrl": null,
+  "logoIcon": "zap",
+  "theme": "dark",
+  "accentColor": "green",
+  "backgroundGradient": {
+    "topLeft": "rgba(70,167,88,0.05)",
+    "bottomRight": "rgba(62,99,221,0.05)"
+  },
+  "cardDensity": "comfortable",
+  "showMetricsPanel": true,
+  "showTokenPanel": true,
+  "refreshInterval": 30000,
+  "timeDisplay": "utc",
+  "agents": null
+}
+```
+
+**Background gradient tip:** Match the `topLeft` color to the accent color at 5% opacity. Here are the gradient presets per accent:
+
+| Accent | topLeft | bottomRight |
+|--------|---------|-------------|
+| green | `rgba(70,167,88,0.05)` | `rgba(62,99,221,0.05)` |
+| blue | `rgba(62,99,221,0.05)` | `rgba(142,78,198,0.05)` |
+| purple | `rgba(142,78,198,0.05)` | `rgba(62,99,221,0.05)` |
+| orange | `rgba(247,107,21,0.05)` | `rgba(255,178,36,0.05)` |
+| red | `rgba(229,77,46,0.05)` | `rgba(247,107,21,0.05)` |
+| cyan | `rgba(0,162,199,0.05)` | `rgba(62,99,221,0.05)` |
+| amber | `rgba(255,178,36,0.05)` | `rgba(247,107,21,0.05)` |
+| pink | `rgba(232,121,164,0.05)` | `rgba(142,78,198,0.05)` |
+
+### Custom agent roster (optional)
+
+If the user has specific agents they want displayed on the agent strip, ask them. Otherwise set `agents` to `null` to use the default roster.
+
+Custom format:
+```json
+{
+  "agents": [
+    { "id": "alpha", "name": "Alpha", "letter": "A", "color": "#3e63dd", "role": "Lead Engineer", "badge": "lead" },
+    { "id": "beta", "name": "Beta", "letter": "B", "color": "#46a758", "role": "Code & Writing", "badge": "spc" }
+  ]
+}
+```
+
+- `id`: unique lowercase identifier
+- `name`: display name
+- `letter`: single character shown in the avatar circle
+- `color`: hex color for the agent's avatar (must be `#` + 6 hex digits)
+- `role`: short description
+- `badge`: optional, `"lead"` or `"spc"`
+
+### Settings survive updates
+
+The `settings.json` file is listed in `.gitignore`. When the user runs `git pull` or clicks the update button, their settings are preserved. They never need to re-personalize after an update.
 
 ---
 
@@ -118,7 +292,7 @@ echo "NEXT_PUBLIC_OPENCLAW_API_KEY=$(grep OPENCLAW_API_KEY .env.local | head -1 
 
 ## PostgreSQL Bridge Setup (Optional)
 
-If you have a PostgreSQL database with session/handoff data (e.g., from Continuous Claude), the bridge script syncs that data into task JSON files.
+If you have a PostgreSQL database with session/handoff data, the bridge script syncs that data into task JSON files.
 
 ### Step 1: Set DATABASE_URL
 
@@ -128,8 +302,6 @@ DATABASE_URL=postgresql://user:password@localhost:5432/your_database
 ```
 
 ### Step 2: Run database migrations
-
-This creates the `token_usage` table and a `_migrations` tracking table:
 
 ```bash
 npm run setup-db
@@ -162,20 +334,12 @@ Token usage appears automatically when task JSON files contain a `usage` array. 
 
 ### Option A: dispatch-task.sh (automatic)
 
-Wraps any `claude` command and auto-captures token usage:
+Wraps any agent command and auto-captures token usage:
 
 ```bash
 npm run dispatch -- my-task-id "Fix the authentication bug"
 npm run dispatch -- refactor-api "Refactor the API layer" --model claude-sonnet-4-5
 ```
-
-This:
-1. Creates a task JSON file
-2. Sets agent status to "working"
-3. Runs `claude -p` with JSON output
-4. Parses token counts from the response
-5. Writes usage to both PostgreSQL and the task file
-6. Sets agent back to "idle"
 
 ### Option B: log-usage (manual/scripted)
 
@@ -190,11 +354,9 @@ npm run log-usage -- \
   --model claude-opus-4
 ```
 
-Works with or without PostgreSQL. Always writes to the task JSON file.
-
 ### Option C: sync-db bridge (from database)
 
-If token usage is logged to the `token_usage` PostgreSQL table by other tools, `npm run sync` picks it up and attaches it to task JSON files automatically.
+If token usage is logged to the `token_usage` PostgreSQL table by other tools, `npm run sync` picks it up automatically.
 
 ---
 
@@ -245,7 +407,7 @@ Drop JSON files into `OPENCLAW_TASKS_DIR`. The dashboard is flexible with field 
 
 ### Assignee detection
 
-Checks in order: `claimed_by` → `assignee` → first `deliverables[].assignee`
+Checks in order: `claimed_by` -> `assignee` -> first `deliverables[].assignee`
 
 ### Usage array
 
@@ -254,41 +416,9 @@ Each entry in `usage` represents one API call. Fields:
 - `outputTokens` (required) — also accepts `output_tokens`
 - `cacheReadTokens` (optional) — also accepts `cache_read_tokens`
 - `cacheWriteTokens` (optional) — also accepts `cache_write_tokens`
-- `model` (optional) — e.g. "claude-opus-4", "claude-sonnet-4-5"
-- `provider` (optional) — "anthropic", "openai", etc.
+- `model` (optional) — e.g. "claude-opus-4", "gpt-4o", "gemini-pro"
+- `provider` (optional) — "anthropic", "openai", "google", etc.
 - `timestamp` (optional) — epoch milliseconds
-
----
-
-## Dashboard Config File (Optional)
-
-The bridge or your automation can write `tasks/dashboard-config.json` to customize the header dynamically:
-
-```json
-{
-  "name": "My Swarm",
-  "subtitle": "Mission Control",
-  "repoUrl": "https://github.com/your/repo"
-}
-```
-
-This overrides env vars and updates on the next API poll (30s).
-
----
-
-## Agent Status File (Optional)
-
-To show agents as "working" or "idle" on the agent strip, write `tasks/agents-status.json`:
-
-```json
-{
-  "spark": "working",
-  "scout": "idle",
-  "critic": "working"
-}
-```
-
-The `dispatch-task.sh` script manages this automatically. The sync-db bridge also writes it based on session heartbeats.
 
 ---
 
@@ -297,19 +427,20 @@ The `dispatch-task.sh` script manages this automatically. The sync-db bridge als
 ```
 Data flow:
 
-  [PostgreSQL] ──sync-db.ts──→ [tasks/*.json] ──data.ts──→ [/api/data] ──useSwarmData──→ [UI]
-                                     ↑
-  [dispatch-task.sh] ──log-usage.ts──┘
-  [your scripts] ──log-usage.ts──────┘
+  [PostgreSQL] --sync-db.ts--> [tasks/*.json] --data.ts--> [/api/data] --useSwarmData--> [UI]
+                                     ^
+  [dispatch-task.sh] --log-usage.ts--+
+  [your scripts] --log-usage.ts------+
 ```
 
 Key files:
+- `src/lib/settings.ts` — Settings loader (reads settings.json, caches 5s)
 - `src/lib/data.ts` — Server-side: reads task JSON files, computes stats and token aggregates
 - `src/app/api/data/route.ts` — API endpoint with auth + rate limiting
 - `src/app/api/update/route.ts` — Dashboard self-update endpoint (git pull + restart)
 - `src/lib/useSwarmData.ts` — Client hook, polls /api/data every 30s
 - `src/components/TokenMetricsPanel.tsx` — Token usage charts (trend + model breakdown)
-- `scripts/sync-db.ts` — PostgreSQL → task JSON bridge
+- `scripts/sync-db.ts` — PostgreSQL -> task JSON bridge
 - `scripts/log-usage.ts` — Token usage writer (DB + file)
 - `scripts/dispatch-task.sh` — Agent wrapper with auto-capture
 - `scripts/ensure-tables.ts` — Database migration runner
@@ -323,11 +454,11 @@ Key files:
 | `npm run dev` | Start dev server with hot reload |
 | `npm run build` | Production build |
 | `npm start` | Start production server |
-| `npm run sync` | Sync PostgreSQL → task JSON files (one-time) |
+| `npm run sync` | Sync PostgreSQL -> task JSON files (one-time) |
 | `npm run sync:watch` | Sync with file watch (re-runs on changes) |
 | `npm run setup-db` | Run database migrations (creates token_usage table) |
 | `npm run log-usage -- [args]` | Log token usage to DB + file |
-| `npm run dispatch -- [task-id] [prompt]` | Run claude agent with auto-capture |
+| `npm run dispatch -- [task-id] [prompt]` | Run agent with auto-capture |
 | `npm run lint` | Run ESLint |
 
 ---
@@ -338,10 +469,10 @@ After setup, verify everything works:
 
 1. `npx tsc --noEmit` — TypeScript compiles with zero errors
 2. `npm run dev` — Dashboard loads at http://localhost:3000
-3. Dashboard shows empty Kanban (normal if no task files yet)
-4. Token Usage panel shows "No usage data yet" (normal)
-5. Click a task card → modal appears centered, scrollable
-6. Header shows your custom name (if configured)
+3. Dashboard shows the custom name and accent color from settings.json
+4. Theme matches what the user chose (dark or light)
+5. Token Usage panel shows "No usage data yet" (normal if no data)
+6. Click a task card -> modal appears centered, scrollable
 7. Update button shows "Already up to date" (if on latest commit)
 
 If using PostgreSQL bridge:
@@ -361,7 +492,8 @@ If using PostgreSQL bridge:
 | `npm run sync` fails with connection error | Check `DATABASE_URL` in `.env.local`, verify PostgreSQL is running |
 | `npm run setup-db` fails | Ensure PostgreSQL is accessible and the user has CREATE TABLE permission |
 | Update button shows error | Ensure the git working tree is clean (`git status`) and the remote is reachable |
-| Modal appears at bottom of page | You're on an old version — `git pull` to get the flexbox modal fix |
+| Settings not applying | Check `settings.json` exists in project root and is valid JSON |
+| Theme/colors look wrong | Verify `accentColor` is one of: green, blue, purple, orange, red, cyan, amber, pink |
 | `next build` fails on `/_global-error` | Known Next.js 16 bug — does not affect functionality, ignore it |
 
 ---
@@ -374,6 +506,7 @@ If using PostgreSQL bridge:
 - File size limit: 1MB per task JSON
 - The `/api/update` endpoint runs `git pull --ff-only` (no force pulls, no rebase)
 - Error messages are sanitized (no stack traces exposed)
+- Agent colors are validated (must be `#` + 6 hex digits)
 
 ---
 
@@ -384,3 +517,4 @@ If using PostgreSQL bridge:
 - Do not put non-JSON files in `OPENCLAW_TASKS_DIR` — only `*.json` is read
 - Do not use `--force` with git operations from the update endpoint
 - Do not commit `tasks/` contents — they are generated/ephemeral and gitignored
+- Do not commit `settings.json` — it is user-specific and gitignored

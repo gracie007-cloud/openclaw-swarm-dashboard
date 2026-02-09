@@ -1,9 +1,17 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Activity, Zap, Command, Github, Download, Check, Loader2, AlertCircle } from 'lucide-react';
+import {
+  Activity, Zap, Command, Github, Download, Check, Loader2, AlertCircle,
+  Brain, Bot, Flame, Shield, Cpu, Rocket, Sparkles, Eye, type LucideIcon,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+const LOGO_ICONS: Record<string, LucideIcon> = {
+  zap: Zap, brain: Brain, bot: Bot, flame: Flame, shield: Shield,
+  cpu: Cpu, rocket: Rocket, sparkles: Sparkles, eye: Eye, activity: Activity,
+};
 
 interface HeaderProps {
   activeAgents: number;
@@ -16,6 +24,8 @@ interface HeaderProps {
   dashboardName?: string;
   dashboardSubtitle?: string;
   repoUrl?: string | null;
+  logoIcon?: string;
+  accentColor?: string;
 }
 
 type UpdateStatus = 'idle' | 'updating' | 'updated' | 'current' | 'error';
@@ -31,7 +41,10 @@ export default function Header({
   dashboardName = 'OpenClaw',
   dashboardSubtitle = 'Mission Control',
   repoUrl,
+  logoIcon = 'zap',
+  accentColor,
 }: HeaderProps) {
+  const LogoIcon = LOGO_ICONS[logoIcon] || Zap;
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
 
   const handleUpdate = useCallback(async () => {
@@ -98,9 +111,15 @@ export default function Header({
       <div className="flex items-center gap-4">
         {/* Logo */}
         <div className="relative">
-          <div className="absolute inset-0 bg-green-DEFAULT/20 blur-xl rounded-full" />
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-green-DEFAULT/20 to-green-DEFAULT/5 border border-green-DEFAULT/30 flex items-center justify-center">
-            <Zap className="w-5 h-5 text-green-DEFAULT" />
+          <div className="absolute inset-0 blur-xl rounded-full" style={{ background: 'var(--accent-primary-light)' }} />
+          <div
+            className="relative w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{
+              background: `linear-gradient(to bottom right, var(--accent-primary-light), transparent)`,
+              border: `1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)`,
+            }}
+          >
+            <LogoIcon className="w-5 h-5" style={{ color: 'var(--accent-primary)' }} />
           </div>
         </div>
 
@@ -204,16 +223,25 @@ export default function Header({
           className={cn(
             "relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
             feedOpen
-              ? "bg-green-DEFAULT/10 text-green-DEFAULT border border-green-DEFAULT/30"
+              ? "border"
               : "bg-secondary/50 text-muted-foreground border border-border hover:border-border/80 hover:text-foreground hover:bg-secondary"
           )}
+          style={feedOpen ? {
+            background: 'var(--accent-primary-light)',
+            color: 'var(--accent-primary)',
+            borderColor: 'color-mix(in srgb, var(--accent-primary) 30%, transparent)',
+          } : undefined}
         >
           <Activity className="w-4 h-4" />
 
           {/* Notification dot */}
           {!feedOpen && (
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-DEFAULT animate-pulse-soft"
-              style={{ boxShadow: '0 0 8px rgba(70, 167, 88, 0.6)' }}
+            <span
+              className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full animate-pulse-soft"
+              style={{
+                background: 'var(--accent-primary)',
+                boxShadow: `0 0 8px var(--accent-glow)`,
+              }}
             />
           )}
         </button>

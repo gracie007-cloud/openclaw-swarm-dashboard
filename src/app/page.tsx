@@ -19,7 +19,7 @@ import { STATUS_CONFIG } from '@/types';
 // ── Page Component ──────────────────────────────────────────────────────
 
 export default function Home() {
-  const { agents, tasks, feed, loading, error, lastUpdated, updateTask, tokenStats, config } = useSwarmData();
+  const { agents, tasks, feed, loading, error, lastUpdated, updateTask, tokenStats, config, settings } = useSwarmData();
   
   const handleTaskMove = useCallback((taskId: string, newStatus: TaskStatus) => {
     const task = tasks.find(t => t.id === taskId);
@@ -141,6 +141,8 @@ export default function Home() {
           dashboardName={config?.name}
           dashboardSubtitle={config?.subtitle}
           repoUrl={config?.repoUrl}
+          logoIcon={settings?.logoIcon}
+          accentColor={settings?.accent?.primary}
         />
 
         <AgentStrip
@@ -160,10 +162,12 @@ export default function Home() {
           onTaskMove={handleTaskMove}
         />
 
-        {/* Metrics Panel */}
+        {/* Metrics Panels (conditional via settings) */}
         <div className="mt-8 mb-8 space-y-6">
-          <MetricsPanel />
-          <TokenMetricsPanel tokenStats={tokenStats} />
+          {(settings?.showMetricsPanel !== false) && <MetricsPanel />}
+          {(settings?.showTokenPanel !== false) && (
+            <TokenMetricsPanel tokenStats={tokenStats} />
+          )}
         </div>
         
         {/* Last updated indicator */}
