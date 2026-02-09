@@ -46,13 +46,45 @@ A real-time web dashboard that gives you eyes on your [OpenClaw](https://opencla
 
 ---
 
+## Why OpenClaw Dashboard?
+
+### Zero friction
+Drop JSON files in a folder. That's the entire backend. No database required, no config files to wrestle with, no Docker compose to debug. Point it at your tasks directory and you're live in under a minute.
+
+### Works with any AI
+Claude, GPT, Gemini, LLaMA, Mistral, local models — it doesn't matter. The dashboard reads standard JSON. If your agent can write a file, it can talk to this dashboard. No vendor lock-in, no proprietary APIs.
+
+### AI-assisted setup
+Tell your AI agent to clone the repo and read `AGENTS.md`. It handles installation, asks you personalization questions (name, theme, colors), and writes a config file — all without you touching a terminal. Works with any AI agent.
+
+### Your style, your brand
+8 accent colors. Dark and light themes. 10 logo icons. Custom dashboard name and subtitle. Custom agent roster. All stored in a single `settings.json` that **survives every update** — `git pull` never touches your preferences.
+
+### Token usage visibility
+See exactly how many tokens each task consumed. Per-model breakdowns. Daily trend charts. Input vs output splits. Know where your API budget is going before the invoice arrives.
+
+### Self-updating
+One button in the header pulls the latest code from GitHub and auto-restarts the server. No SSH, no manual deploys. Your dashboard stays current without leaving the browser.
+
+### Production-ready security
+API key authentication. Rate limiting (60 req/min per IP). Path traversal protection. File size limits. Sanitized error messages. Published security audits in the repo — nothing hidden.
+
+### Built for teams
+Bind to `0.0.0.0` and anyone on your network gets eyes on the swarm. Real-time agent status, live activity feed, Kanban board with drag-and-drop. Everyone sees the same picture.
+
+### Lightweight and fast
+Next.js 16, React 19, Tailwind CSS. No heavy ORM, no background workers, no message queues. Reads files from disk, serves JSON over HTTP. Runs comfortably on a $5/month VPS.
+
+---
+
 ## Table of Contents
 
 1. [What Is This?](#what-is-this)
-2. [Quick Start](#quick-start)
-3. [Agent-Assisted Install](#recommended-agent-assisted-install)
-4. [Personalization](#personalization)
-5. [Configuration](#configuration)
+2. [Why OpenClaw Dashboard?](#why-openclaw-dashboard)
+3. [Quick Start](#quick-start)
+4. [Agent-Assisted Install](#recommended-agent-assisted-install)
+5. [Personalization](#personalization)
+6. [Configuration](#configuration)
 6. [Security](#security)
 7. [Task File Format](#task-file-format)
 8. [Agent Roster](#agent-roster)
